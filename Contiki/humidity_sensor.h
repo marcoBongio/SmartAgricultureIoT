@@ -5,7 +5,6 @@
 #include "dev/button-hal.h"
 #include "dev/leds.h"
 #include "sys/log.h"
-#include "../utilities.h"
 
 #include <stdio.h>
 #include <stdlib.h>
