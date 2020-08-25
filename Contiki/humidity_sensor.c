@@ -64,6 +64,11 @@ PROCESS_THREAD(humidity_sensor, ev, data) {
 					if(random_rand() % 2 == 0) var = var*(-1);
 
 					humidity += var;
+					if(humidity > HUM_MAX)
+						humidity = HUM_MAX;
+					if(humidity < HUM_MIN)
+						humidity = HUM_MIN;
+					
 					printf("Humidity variation registered, variation: %d \n", var);
 
 					//trigger the event to notify observers
