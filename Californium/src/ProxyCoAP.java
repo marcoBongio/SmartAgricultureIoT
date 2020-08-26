@@ -43,27 +43,28 @@ public class ProxyCoAP extends CoapServer {
     public static void main (String[] args) {
     	
     	BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-    	int NUM_NODES=0;
+    	int NUM_NODES=1;
     	
     	System.out.print("\033[H\033[2J");  //"clear" the screen
 	System.out.flush();
-    	System.out.print("\nPlease insert the NUM_NODES: ");
+    	/*System.out.print("\nPlease insert the NUM_NODES: ");
     	try {
 		NUM_NODES = Integer.parseInt(br.readLine());
-	} catch (IOException e) { e.printStackTrace(); }
+	} catch (IOException e) { e.printStackTrace(); }*/
 	
         try {
             // create server
             ProxyCoAP server = new ProxyCoAP(NUM_NODES);
+            server.add(new RegistrationInterface("registration"));
             server.start();
             
-            CoapClient[] resource = new CoapClient[server.getNumNodes()];
+/*         CoapClient[] resource = new CoapClient[server.getNumNodes()];
 
             for(int i=0; i<server.getNumNodes(); i++) {
             	
             	String hex=Integer.toHexString(i+2);
-            	String addr = "coap://[fd00::20"+hex+":"+hex+":"+hex+":"+ hex + "]/humidity";
-            	System.out.println(addr);
+            	//String addr = "coap://[fd00::20"+hex+":"+hex+":"+hex+":"+ hex + "]/humidity";
+            	//System.out.println(addr);
             	
             	resource[i] = new CoapClient(addr);
             	resource[i].observe(
@@ -95,7 +96,7 @@ public class ProxyCoAP extends CoapServer {
                                 System.err.println("[ERROR] Observing Failed. Retrying...");
                             }
                         });
-            }
+            }*/
         } catch (SocketException e) {    
             System.err.println("Failed to initialize server: " + e.getMessage());
         }

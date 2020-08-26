@@ -1,3 +1,5 @@
+Node.class
 ProxyCoAP.class
 TemperatureResource.class
-ProxyCoAP$1.class
+RegistrationInterface.class
+RegistrationInterface$1.class

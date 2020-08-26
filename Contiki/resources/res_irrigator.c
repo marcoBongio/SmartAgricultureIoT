@@ -18,11 +18,11 @@ static void res_post_put_handler(coap_message_t *, coap_message_t *, uint8_t *, 
 
 extern float humidity;
 
-uint8_t humidifier_status = 0;
-uint8_t humidifier_value = 30; // Valore di default
+uint8_t irrigator_status = 0;
+uint8_t irrigator_value = 30; // Valore di default
 
 RESOURCE(res_irrigator,
-         "title=\"Humidifier actuator\"; GET/PUT/POST; status=on|off&target=<value>; rt=\"Actuator\"\n",
+         "title=\"irrigator actuator\"; GET/PUT/POST; status=on|off&target=<value>; rt=\"Actuator\"\n",
          res_get_handler, res_post_put_handler, res_post_put_handler, NULL);
 
 static void res_get_handler(coap_message_t *request, coap_message_t *response, uint8_t *buffer, uint16_t preferred_size, int32_t *offset){
@@ -33,10 +33,10 @@ static void res_get_handler(coap_message_t *request, coap_message_t *response, u
     if (accept == APPLICATION_JSON){
         coap_set_header_content_format(response, APPLICATION_JSON);
 
-        if (!humidifier_status)
+        if (!irrigator_status)
             snprintf((char *)buffer, COAP_MAX_CHUNK_SIZE, "{\"status\":\"off\"}");
         else
-            snprintf((char *)buffer, COAP_MAX_CHUNK_SIZE, "{\"status\":\"on\", \"target_humidity\":%d}", humidifier_value);
+            snprintf((char *)buffer, COAP_MAX_CHUNK_SIZE, "{\"status\":\"on\", \"target_humidity\":%d}", irrigator_value);
 
         coap_set_payload(response, buffer, strlen((char *)buffer));
     } else {
@@ -58,15 +58,15 @@ static void res_post_put_handler(coap_message_t *request, coap_message_t *respon
     if (len != 0){
 
         if (strncmp(value, "on", len) == 0)
-            humidifier_status = 1;
+            irrigator_status = 1;
         else if (strncmp(value, "off", len) == 0)
-            humidifier_status = 0;
+            irrigator_status = 0;
         else
             coap_set_status_code(response, BAD_REQUEST_4_00);
     } else
         coap_set_status_code(response, BAD_REQUEST_4_00);
 
-    if (humidifier_status){
+    if (irrigator_status){
 
         len = coap_get_post_variable(request, "value", &value);
 

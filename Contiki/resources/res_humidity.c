@@ -17,8 +17,8 @@ static void res_event_handler();
 //extern uint8_t humidifier_status;
 //extern uint8_t humidifier_value;
 
-float humidity = -1;
-float last_humidity = -1;
+float humidity = 45;
+float last_humidity = 45;
 
 EVENT_RESOURCE(
     res_humidity,
