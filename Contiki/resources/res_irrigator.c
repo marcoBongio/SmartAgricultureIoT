@@ -1,43 +1,59 @@
 #include "contiki.h"
 #include "coap-engine.h"
-#include "sys/log.h"
-
-#include <limits.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
-
-#define LOG_MODULE "Humidity actuator"
-#define LOG_LEVEL LOG_LEVEL_DBG
+#include "sys/log.h"
 #define MAX_AGE 60
-#define HUM_MAX 100
-#define HUM_MIN 0
 
-static void res_get_handler(coap_message_t *, coap_message_t *, uint8_t *, uint16_t, int32_t *);
-static void res_post_put_handler(coap_message_t *, coap_message_t *, uint8_t *, uint16_t, int32_t *);
+bool last_status = false;
+bool irrigator_status = false;
 
-extern float humidity;
+//static void res_post_handler(coap_message_t *request, coap_message_t *response, uint8_t *buffer, uint16_t preferred_size, int32_t *offset);
+static void res_put_handler(coap_message_t *request, coap_message_t *response, uint8_t *buffer, uint16_t preferred_size, int32_t *offset);
+static void res_get_handler(coap_message_t *request, coap_message_t *response, uint8_t *buffer, uint16_t preferred_size, int32_t *offset);
+static void res_event_handler(void);
+  
+/*---------------------------------------------------------------------------*/
 
-uint8_t irrigator_status = 0;
-uint8_t irrigator_value = 30; // Valore di default
+EVENT_RESOURCE(res_irrigator,//PORCO DIO
+         "title=\"irrigator\"; GET/PUT; status=on|off; rt=\"Actuator\"\n",
+         //PORCO DIOP
+		 res_get_handler,
+         NULL,
+		 res_put_handler,
+         NULL,
+         res_event_handler);
 
-RESOURCE(res_irrigator,
-         "title=\"irrigator actuator\"; GET/PUT/POST; status=on|off&target=<value>; rt=\"Actuator\"\n",
-         res_get_handler, res_post_put_handler, res_post_put_handler, NULL);
+static void res_put_handler(coap_message_t *request, coap_message_t *response, uint8_t *buffer, uint16_t preferred_size, int32_t *offset){
+
+	size_t len = 0;
+    	const char *value = NULL;
+    	
+	len = coap_get_post_variable(request, "status", &value);
+    if (len != 0){
+
+        if (strncmp(value, "on", len) == 0){
+            irrigator_status = true;
+			printf("Irrigator ON\n");
+		}
+        else if (strncmp(value, "off", len) == 0){
+            irrigator_status = false;
+			printf("Irrigator OFF\n");
+		}
+        else
+            coap_set_status_code(response, BAD_REQUEST_4_00);
+    } else
+        coap_set_status_code(response, BAD_REQUEST_4_00);
+	
+}
 
 static void res_get_handler(coap_message_t *request, coap_message_t *response, uint8_t *buffer, uint16_t preferred_size, int32_t *offset){
 
     unsigned int accept = APPLICATION_JSON;
     coap_get_header_accept(request, &accept);
 
-    if (accept == APPLICATION_JSON){
+    if (accept == APPLICATION_JSON) {
         coap_set_header_content_format(response, APPLICATION_JSON);
-
-        if (!irrigator_status)
-            snprintf((char *)buffer, COAP_MAX_CHUNK_SIZE, "{\"status\":\"off\"}");
-        else
-            snprintf((char *)buffer, COAP_MAX_CHUNK_SIZE, "{\"status\":\"on\", \"target_humidity\":%d}", irrigator_value);
-
+        snprintf((char *)buffer, COAP_MAX_CHUNK_SIZE, "{\"status\":%d}", irrigator_status);
         coap_set_payload(response, buffer, strlen((char *)buffer));
     } else {
         coap_set_status_code(response, NOT_ACCEPTABLE_4_06);
@@ -45,41 +61,13 @@ static void res_get_handler(coap_message_t *request, coap_message_t *response, u
         coap_set_payload(response, msg, strlen(msg));
     }
 
-    coap_set_header_max_age(response, MAX_AGE);    
+    coap_set_header_max_age(response, MAX_AGE);
 }
 
-static void res_post_put_handler(coap_message_t *request, coap_message_t *response, uint8_t *buffer, uint16_t preferred_size, int32_t *offset){
+static void res_event_handler(){
 
-    size_t len = 0;
-    const char *value = NULL;
-
-    len = coap_get_post_variable(request, "status", &value);
-
-    if (len != 0){
-
-        if (strncmp(value, "on", len) == 0)
-            irrigator_status = 1;
-        else if (strncmp(value, "off", len) == 0)
-            irrigator_status = 0;
-        else
-            coap_set_status_code(response, BAD_REQUEST_4_00);
-    } else
-        coap_set_status_code(response, BAD_REQUEST_4_00);
-
-    if (irrigator_status){
-
-        len = coap_get_post_variable(request, "value", &value);
-
-        if (len != 0){         
-            uint8_t precheck = atoi(value);
-
-            if (precheck > HUM_MAX)
-                irrigator_value = HUM_MAX;
-            else if (precheck < HUM_MIN)
-                irrigator_value = HUM_MIN;
-            else 
-                irrigator_value = precheck;
-        } else
-            coap_set_status_code(response, BAD_REQUEST_4_00);
+    if (last_status != irrigator_status){
+        last_status = irrigator_status;
+        coap_notify_observers(&res_irrigator);
     }
 }

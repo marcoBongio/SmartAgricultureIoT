@@ -46,13 +46,13 @@ public class RegistrationInterface extends CoapResource {
 			System.out.println("nodeName=" + nodeName + ", nodeIP="+nodeIP+", nodeType=" + nodeType + ", nodeResource=" + nodeResource);
 			//ServerCoap.nodesList.put(nodeName, newnode);
 
-			coapClient(nodeIP, nodeName, nodeResource);
+			coapClient(nodeIP, nodeName, nodeType, nodeResource);
 
 		}
 
 	}
 	
-	public static void coapClient(String moteIP, String nodeName, String moteResource) {
+	public static void coapClient(String moteIP, String nodeName, String nodeType, String moteResource) {
         CoapClient client = new CoapClient("coap://[" + moteIP + "]/" + moteResource);
         client.observe(
             new CoapHandler() {
@@ -61,11 +61,17 @@ public class RegistrationInterface extends CoapResource {
                         //try {
                               JSONObject jobj = null;
                     try {
-                    jobj = new JSONObject(tmp.toString());  
+                    jobj = new JSONObject(tmp.toString()); 
+		    System.out.println("Prova:"+jobj); 
                     } catch(Exception e) { System.out.println("tmp= "+tmp+", jobj= "+jobj); }
-                                   
-                            String value = jobj.get("humidity").toString();
-			System.out.println(nodeName+") Humidity: "+value);
+                        
+			if (nodeType.equals("sensor")){          
+                        	String value = jobj.get("humidity").toString();
+				System.out.println(nodeName+") Humidity: "+value);
+			} else{
+				String value = jobj.get("status").toString();
+				System.out.println(nodeName+") Status: "+value);
+			}
 
                 }
 
