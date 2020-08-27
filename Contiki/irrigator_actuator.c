@@ -1,6 +1,6 @@
 #include "irrigator_actuator.h"
 
-static struct etimer e_timer;
+//static struct etimer e_timer;
 
 static bool result = false;
 
@@ -45,8 +45,11 @@ PROCESS_THREAD(irrigator_actuator, ev, data){
 	
 	printf("Starting irrigator Actuator\n");
 	coap_activate_resource(&res_irrigator, "irrigator");
-
-	etimer_set(&e_timer, CLOCK_SECOND * 10);
+	
+	//notify status the first time
+	res_irrigator.trigger();
+	
+	/*etimer_set(&e_timer, CLOCK_SECOND * 10);
 
 	while(1) {
 		
@@ -56,7 +59,7 @@ PROCESS_THREAD(irrigator_actuator, ev, data){
 				res_irrigator.trigger();
 
 			etimer_set(&e_timer, CLOCK_SECOND * 10);
-	}
+	}*/
 
 	PROCESS_END();
 }

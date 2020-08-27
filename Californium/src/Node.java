@@ -17,7 +17,7 @@ public class Node {
     	this.nodeIP = nodeIP;
     }
 
-    public String getnodeIP() {
+    public String getNodeIP() {
             return nodeIP;
     }
 

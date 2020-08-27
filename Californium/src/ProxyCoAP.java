@@ -5,12 +5,14 @@ import org.eclipse.californium.core.*;
 import org.json.simple.*;
 import org.json.simple.parser.ParseException;
 
+import java.util.*;
+
 public class ProxyCoAP extends CoapServer {
 
     private int NUM_NODES;
     private static String[] proxyCache; //cache of the Server where the temperature value will be stored - Maybe it has to become a list in order to store the value of every sensor
     private TemperatureResource[] t;
-
+	public static Node actuatorList;
     //constructor
     public ProxyCoAP(int nn) throws SocketException {
     

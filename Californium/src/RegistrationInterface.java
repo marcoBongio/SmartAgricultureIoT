@@ -18,6 +18,19 @@ public class RegistrationInterface extends CoapResource {
 	    super(name);
 	}
 	
+	//actuator look-up
+	public void handleGET(CoapExchange exchange) {
+		Response response = new Response(ResponseCode.CONTENT);
+
+		//String name = exchange.getQueryParameter("actuatorName");
+		String actuatorIP = ProxyCoAP.actuatorList.getNodeIP();
+		
+		System.out.println("Actuator IP: "+actuatorIP);
+		response.setPayload(actuatorIP);
+
+		exchange.respond(response);
+	}
+	
 	public void handlePOST(CoapExchange exchange) {
 		
 		byte[] request = exchange.getRequestPayload();
@@ -44,7 +57,8 @@ public class RegistrationInterface extends CoapResource {
 			Node newNode = new Node(nodeName, nodeType, nodeResource,nodeIP);
 			
 			System.out.println("nodeName=" + nodeName + ", nodeIP="+nodeIP+", nodeType=" + nodeType + ", nodeResource=" + nodeResource);
-			//ServerCoap.nodesList.put(nodeName, newnode);
+			
+			if(nodeType.equals("actuator")) ProxyCoAP.actuatorList = newNode;
 
 			coapClient(nodeIP, nodeName, nodeType, nodeResource);
 
@@ -58,12 +72,10 @@ public class RegistrationInterface extends CoapResource {
             new CoapHandler() {
                 public void onLoad(CoapResponse response) {
                 	String tmp = response.getResponseText();
-                        //try {
-                              JSONObject jobj = null;
-                    try {
-                    jobj = new JSONObject(tmp.toString()); 
-		    System.out.println("Prova:"+jobj); 
-                    } catch(Exception e) { System.out.println("tmp= "+tmp+", jobj= "+jobj); }
+                        try {
+				JSONObject jobj = null;
+                    		jobj = new JSONObject(tmp.toString()); 
+		    		System.out.println("Prova:"+jobj); 
                         
 			if (nodeType.equals("sensor")){          
                         	String value = jobj.get("humidity").toString();
@@ -72,6 +84,7 @@ public class RegistrationInterface extends CoapResource {
 				String value = jobj.get("status").toString();
 				System.out.println(nodeName+") Status: "+value);
 			}
+		} catch(Exception e) { System.out.println("Ops!"); }
 
                 }
 
