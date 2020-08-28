@@ -1,3 +1,5 @@
 /Contiki/Makefile
 /Contiki/build/*
 /Californium/target/*
+/Californium/.idea/*
+/Californium/*.iml

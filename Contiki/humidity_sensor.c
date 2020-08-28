@@ -21,16 +21,16 @@ static void response_handler(coap_message_t *response){
 
 static void actuator_response_handler(coap_message_t *response){
 
-	if (response == NULL)
+	if (response == NULL) {
+		LOG_DBG("No Actuator found...");
 		return;
+	}
 
 	LOG_DBG("Actuator IP: %s\n", response->payload);
 	actuator_assigned = true;
 	strcpy(actuator_ip, "coap://[");
 	strcat(actuator_ip, (const char *)response->payload);
-	strcat(actuator_ip,"]:5683");
-    
-    
+	strcat(actuator_ip,"]:5683");    
 }
 
 static void test_resp_handler(coap_message_t *response){
@@ -84,7 +84,7 @@ PROCESS_THREAD(humidity_sensor, ev, data) {
 
 			coap_set_payload(request, (uint8_t *)mes, sizeof(mes)-1);
 
-			printf("Actuator IP request: %s\n", (const char*) request->payload);
+			//printf("Actuator IP request: %s\n", (const char*) request->payload);
 			COAP_BLOCKING_REQUEST(&server_ep, request, actuator_response_handler);
 
 			coap_endpoint_parse(actuator_ip, strlen(actuator_ip), &actuator_ep);
@@ -104,14 +104,16 @@ PROCESS_THREAD(humidity_sensor, ev, data) {
 					printf("Humidity variation registered, variation: %d \n", var);
 					res_humidity.trigger(); //trigger the event to notify observers
 					
-					if(humidity < 45) {
+					char mes[20];
+					if(humidity < 45) strcpy(mes,"status=on");
+					else if(humidity > 80) strcpy(mes,"status=off");
+					else strcpy(mes,"");
+					
+					if(strcmp(mes, "") != 0) {
+						printf("Issuing irrigator command: %s\n", mes);
+						
 						coap_init_message(request, COAP_TYPE_CON, COAP_PUT, 0);
 						coap_set_header_uri_path(request, "/irrigator");
-
-						char mes[20];
-						strcpy(mes,"status=on");
-						//if(status) strcat(mes, "on");
-						//else strcat(mes, "off");
 						
 						LOG_DBG("Toggling actuator %s\n", mes);
 

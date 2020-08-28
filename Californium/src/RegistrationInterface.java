@@ -20,14 +20,15 @@ public class RegistrationInterface extends CoapResource {
 	
 	//actuator look-up
 	public void handleGET(CoapExchange exchange) {
+		if(ProxyCoAP.actuatorList == null) return;
+		
 		Response response = new Response(ResponseCode.CONTENT);
 
 		//String name = exchange.getQueryParameter("actuatorName");
 		String actuatorIP = ProxyCoAP.actuatorList.getNodeIP();
 		
-		System.out.println("Actuator IP: "+actuatorIP);
+		//System.out.println("Actuator IP: "+actuatorIP);
 		response.setPayload(actuatorIP);
-
 		exchange.respond(response);
 	}
 	

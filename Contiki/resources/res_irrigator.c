@@ -32,22 +32,19 @@ static void res_put_handler(coap_message_t *request, coap_message_t *response, u
 	if (len != 0){
 
 		if (strncmp(value, "on", len) == 0){
-			irrigator_status = true;
-			printf("Irrigator ON\n");
+			if(!irrigator_status) { //if already "on" don't do anything
+				irrigator_status = true;
+				printf("Irrigator ON\n");
+			}
 		}
-		else if (strncmp(value, "off", len) == 0){
-			irrigator_status = false;
-			printf("Irrigator OFF\n");
+		else if (strncmp(value, "off", len) == 0) {
+			if(irrigator_status) {
+				irrigator_status = false;
+				printf("Irrigator OFF\n");
+			}
 		}
-		else {
-		    coap_set_status_code(response, BAD_REQUEST_4_00);
-		    //printf("ERRORE value= %s\n", value);
-		    }
-	} else {
-		//printf("ERRORE: len=0, request= %s\n", (const char *)request);
-		coap_set_status_code(response, BAD_REQUEST_4_00);
-	}
-	
+		else coap_set_status_code(response, BAD_REQUEST_4_00);
+	} else coap_set_status_code(response, BAD_REQUEST_4_00);	
 }
 
 static void res_get_handler(coap_message_t *request, coap_message_t *response, uint8_t *buffer, uint16_t preferred_size, int32_t *offset){
@@ -68,7 +65,7 @@ static void res_get_handler(coap_message_t *request, coap_message_t *response, u
     coap_set_header_max_age(response, MAX_AGE);
 }
 
-static void res_event_handler(){
+static void res_event_handler(){ //quando viene chiamata questa?
 
     if (last_status != irrigator_status){
         last_status = irrigator_status;
