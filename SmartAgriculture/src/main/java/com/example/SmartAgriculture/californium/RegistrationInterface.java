@@ -1,14 +1,11 @@
-import java.net.SocketException;
-import java.io.*;
-import org.eclipse.californium.core.*;
+package com.example.SmartAgriculture.californium;
 
-import org.json.simple.*;
+import org.eclipse.californium.core.*;
 import org.eclipse.californium.core.coap.CoAP.ResponseCode;
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
 import org.eclipse.californium.core.coap.Response;
 import org.eclipse.californium.core.server.resources.CoapExchange;
 
-import org.json.simple.parser.ParseException;
 import org.json.JSONObject;
 
 public class RegistrationInterface extends CoapResource {
@@ -20,21 +17,31 @@ public class RegistrationInterface extends CoapResource {
 	
 	//actuator look-up
 	public void handleGET(CoapExchange exchange) {
-		if(ProxyCoAP.actuatorList.isEmpty()) return;
-		
-		Response response = new Response(ResponseCode.CONTENT);
+		if(ProxyCoAP.sensorList.isEmpty()) return;
+
 		String actuatorIP = null;
 		String payload = new String(exchange.getRequestPayload());
 		if(payload.equals("irrigator")) {
-			for (Node n : ProxyCoAP.actuatorList) {
-				if (n.getNodeResource().equals("irrigator"))
+			for (Node n : ProxyCoAP.sensorList) {
+				if (n.getNodeType().equals("actuator") && n.getNodeResource().equals("irrigator"))
 					actuatorIP = n.getNodeIP();
 			}
+			if(actuatorIP == null) return;
 		}
+		Response response = new Response(ResponseCode.CONTENT);
 		response.setPayload(actuatorIP);
 		exchange.respond(response);
 	}
-	
+
+	public boolean checkDouble(String ip) {
+		for(Node n: ProxyCoAP.sensorList)
+			if(n.getNodeIP().equals(ip))
+				return true;
+		/*for(Node n: ProxyCoAP.actuatorList)
+			if(n.getNodeIP().equals(ip))
+				return true;*/
+		return false;
+	}
 	public void handlePOST(CoapExchange exchange) {
 		
 		byte[] request = exchange.getRequestPayload();
@@ -48,6 +55,13 @@ public class RegistrationInterface extends CoapResource {
 
 		if (contentJson != null){
 			String nodeIP = (String) exchange.getSourceAddress().getHostAddress();
+
+			//check for double registrations
+			if(checkDouble(nodeIP)) {
+				System.out.println("Node "+nodeIP+" is already registered!");
+				return;
+			}
+
 			String nodeType = (String) contentJson.get("NodeType");
 			String nodeResource = (String) contentJson.get("NodeResource");
 
@@ -57,7 +71,7 @@ public class RegistrationInterface extends CoapResource {
 			exchange.respond(response);
 
 			String nodeName = "Node" + count++;
-			if(nodeType.equals("actuator")) nodeName += "[actuator]";
+			//if(nodeType.equals("actuator")) nodeName += "[actuator]";
 
 			CoapClient client = new CoapClient("coap://[" + nodeIP + "]/" + nodeResource);
 			client.post("name="+nodeName,MediaTypeRegistry.TEXT_PLAIN); //a cosa serve?
@@ -65,8 +79,8 @@ public class RegistrationInterface extends CoapResource {
 			Node newNode = new Node(nodeName, nodeType, nodeResource, nodeIP);
 			System.out.println("nodeName=" + nodeName + ", nodeIP="+nodeIP+", nodeType=" + nodeType + ", nodeResource=" + nodeResource);
 			
-			if(nodeType.equals("actuator")) ProxyCoAP.actuatorList.add(newNode);
-			else ProxyCoAP.sensorList.add(newNode);
+			//if(nodeType.equals("actuator")) ProxyCoAP.actuatorList.add(newNode);
+			ProxyCoAP.sensorList.add(newNode);
 
 			coapClient(newNode);
 

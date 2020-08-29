@@ -1,3 +1,5 @@
+package com.example.SmartAgriculture.californium;
+
 import org.eclipse.californium.core.CoapResource;
 import org.eclipse.californium.core.server.resources.CoapExchange;
 

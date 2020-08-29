@@ -1,5 +1,5 @@
-/Contiki/Makefile
-/Contiki/build/*
-/Californium/target/*
-/Californium/.idea/*
-/Californium/*.iml
+/contiki/Makefile
+/contiki/build/*
+/SmartAgriculture/target/*
+/SmartAgriculture/.idea/*
+/SmartAgriculture/*.iml

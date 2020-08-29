@@ -1,3 +1,5 @@
+package com.example.SmartAgriculture.californium;
+
 import java.sql.Timestamp;
 
 public class ResourceValue {

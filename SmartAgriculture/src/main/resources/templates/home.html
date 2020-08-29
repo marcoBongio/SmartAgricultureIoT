@@ -1,0 +1,31 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Smart-Agriculture Dashboard</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+</head>
+    <body>
+        <!--<p th:text="${name} + ' humidity: '+ ${humidity}" />-->
+        <table id="nodeTable" border="1">
+            <thead style="font-weight:bold;">
+                <tr>
+                    <th>NAME</th>
+                    <th>IP</th>
+                    <th>TYPE</th>
+                    <th>RESOURCE</th>
+                    <th>VALUE</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="node: ${nodes}">
+                    <td th:utext="${node.nodeName}"></td>
+                    <td th:utext="${node.nodeIP}"></td>
+                    <td th:utext="${node.nodeType}"></td>
+                    <td th:utext="${node.nodeResource}"></td>
+                    <!--<td th:utext="${node.values}"></td>-->
+                </tr>
+            </tbody>
+
+        </table>
+    </body>
+</html>
