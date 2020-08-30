@@ -47,9 +47,9 @@ PROCESS_THREAD(irrigator_actuator, ev, data){
 	coap_activate_resource(&res_irrigator, "irrigator");
 	
 	//notify status the first time
-	res_irrigator.trigger();
+	//res_irrigator.trigger();
 	
-	/*etimer_set(&e_timer, CLOCK_SECOND * 10);
+	/*etimer_set(&e_timer, CLOCK_SECOND);
 
 	while(1) {
 		
@@ -58,7 +58,7 @@ PROCESS_THREAD(irrigator_actuator, ev, data){
 		if (etimer_expired(&e_timer))
 				res_irrigator.trigger();
 
-			etimer_set(&e_timer, CLOCK_SECOND * 10);
+			etimer_set(&e_timer, CLOCK_SECOND);
 	}*/
 
 	PROCESS_END();

@@ -10,7 +10,7 @@ bool irrigator_status = false;
 //static void res_post_handler(coap_message_t *request, coap_message_t *response, uint8_t *buffer, uint16_t preferred_size, int32_t *offset);
 static void res_put_handler(coap_message_t *request, coap_message_t *response, uint8_t *buffer, uint16_t preferred_size, int32_t *offset);
 static void res_get_handler(coap_message_t *request, coap_message_t *response, uint8_t *buffer, uint16_t preferred_size, int32_t *offset);
-static void res_event_handler(void);
+//static void res_event_handler(void);
   
 /*---------------------------------------------------------------------------*/
 
@@ -20,7 +20,7 @@ EVENT_RESOURCE(res_irrigator,
          NULL,
 		 res_put_handler,
          NULL,
-         res_event_handler);
+         NULL/*res_event_handler*/);
 
 static void res_put_handler(coap_message_t *request, coap_message_t *response, uint8_t *buffer, uint16_t preferred_size, int32_t *offset){
 //printf("PUT handler()\n");
@@ -35,12 +35,14 @@ static void res_put_handler(coap_message_t *request, coap_message_t *response, u
 			if(!irrigator_status) { //if already "on" don't do anything
 				irrigator_status = true;
 				printf("Irrigator ON\n");
+			        coap_notify_observers(&res_irrigator);
 			}
 		}
 		else if (strncmp(value, "off", len) == 0) {
 			if(irrigator_status) {
 				irrigator_status = false;
 				printf("Irrigator OFF\n");
+			        coap_notify_observers(&res_irrigator);
 			}
 		}
 		else coap_set_status_code(response, BAD_REQUEST_4_00);
@@ -64,11 +66,11 @@ static void res_get_handler(coap_message_t *request, coap_message_t *response, u
 
     coap_set_header_max_age(response, MAX_AGE);
 }
-
-static void res_event_handler(){ //quando viene chiamata questa?
+/*
+static void res_event_handler(){ 
 
     if (last_status != irrigator_status){
         last_status = irrigator_status;
         coap_notify_observers(&res_irrigator);
     }
-}
+}*/

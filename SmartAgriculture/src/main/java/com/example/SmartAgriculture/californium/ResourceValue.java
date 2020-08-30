@@ -7,7 +7,11 @@ public class ResourceValue {
     Timestamp timestamp;
 
     public ResourceValue(String value){
-        this.value = Double.parseDouble(value);
+        if(value.equals("on"))
+            this.value = 1.0;
+        else if(value.equals("off"))
+            this.value = 0.0;
+        else this.value = Double.parseDouble(value);
         timestamp = new Timestamp(System.currentTimeMillis());
     }
 

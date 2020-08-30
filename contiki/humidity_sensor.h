@@ -17,10 +17,8 @@
 #define IRRIGATION_ACTUATOR "/irrigator"
 
 #define HUM_MAX 90
-#define HUM_MIN 30
+#define HUM_MIN 35
 
 extern coap_resource_t res_humidity;
 extern coap_resource_t res_humidifier;
-extern uint8_t humidifier_status;
-extern uint8_t humidifier_value;
 extern float humidity;

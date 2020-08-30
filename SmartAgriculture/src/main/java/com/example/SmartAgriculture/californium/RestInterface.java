@@ -8,26 +8,39 @@ import org.eclipse.californium.core.server.resources.CoapExchange;
 
 import org.json.JSONObject;
 
-public class RegistrationInterface extends CoapResource {
+import java.lang.reflect.Proxy;
+
+public class RestInterface extends CoapResource {
 	private static int count = 2; //because id = 1 is the BR
 	
-	public RegistrationInterface(String name) {
+	public RestInterface(String name) {
 	    super(name);
 	}
 	
 	//actuator look-up
 	public void handleGET(CoapExchange exchange) {
+		System.out.println("[ DBG ] actuator lookup... ");
 		if(ProxyCoAP.sensorList.isEmpty()) return;
 
 		String actuatorIP = null;
 		String payload = new String(exchange.getRequestPayload());
+		int min = Integer.MAX_VALUE;
 		if(payload.equals("irrigator")) {
 			for (Node n : ProxyCoAP.sensorList) {
 				if (n.getNodeType().equals("actuator") && n.getNodeResource().equals("irrigator"))
-					actuatorIP = n.getNodeIP();
+					if(n.getLinkedNodes().size() < min) {
+						actuatorIP = n.getNodeIP();
+						min = n.getLinkedNodes().size();
+					}
 			}
 			if(actuatorIP == null) return;
+			for (Node n : ProxyCoAP.sensorList) {
+				if(n.getNodeIP().equals(actuatorIP))
+					n.addLinkedNode(exchange.getSourceAddress().getHostAddress());
+			}
 		}
+		//else if(payload.equals("window")) {}
+
 		Response response = new Response(ResponseCode.CONTENT);
 		response.setPayload(actuatorIP);
 		exchange.respond(response);
@@ -37,24 +50,34 @@ public class RegistrationInterface extends CoapResource {
 		for(Node n: ProxyCoAP.sensorList)
 			if(n.getNodeIP().equals(ip))
 				return true;
-		/*for(Node n: ProxyCoAP.actuatorList)
-			if(n.getNodeIP().equals(ip))
-				return true;*/
 		return false;
 	}
+
+	/*public void handlePUT(CoapExchange exchange) {
+		System.out.println("PUT request received.");
+		JSONObject contentJson = new JSONObject(new String(exchange.getRequestPayload()));
+
+		if(contentJson != null) {
+			String nodeIP = (String) contentJson.get("ip");
+			for(Node n: ProxyCoAP.sensorList)
+				if(n.getNodeIP().equals(nodeIP)) {
+					n.setValues((String) contentJson.get("status"));
+					CoapClient client = new CoapClient("coap://[" + nodeIP + "]/" + n.getNodeResource());
+					client.put("status="+( (String)contentJson.get("status")), MediaTypeRegistry.TEXT_PLAIN);
+				}
+
+			Response response = new Response(ResponseCode.CONTENT);
+			response.setPayload("ACK");
+			exchange.respond(response);
+		}
+	}*/
+
 	public void handlePOST(CoapExchange exchange) {
-		
-		byte[] request = exchange.getRequestPayload();
-
-		String content = new String(request);
-		JSONObject contentJson = null;
-		contentJson = new JSONObject(content);
-		
-		System.out.println("Registration node...");
-
+		JSONObject contentJson = new JSONObject(new String(exchange.getRequestPayload()));
+		System.out.println("Node registration...");
 
 		if (contentJson != null){
-			String nodeIP = (String) exchange.getSourceAddress().getHostAddress();
+			String nodeIP = exchange.getSourceAddress().getHostAddress();
 
 			//check for double registrations
 			if(checkDouble(nodeIP)) {
@@ -71,21 +94,16 @@ public class RegistrationInterface extends CoapResource {
 			exchange.respond(response);
 
 			String nodeName = "Node" + count++;
-			//if(nodeType.equals("actuator")) nodeName += "[actuator]";
 
 			CoapClient client = new CoapClient("coap://[" + nodeIP + "]/" + nodeResource);
 			client.post("name="+nodeName,MediaTypeRegistry.TEXT_PLAIN); //a cosa serve?
 
 			Node newNode = new Node(nodeName, nodeType, nodeResource, nodeIP);
 			System.out.println("nodeName=" + nodeName + ", nodeIP="+nodeIP+", nodeType=" + nodeType + ", nodeResource=" + nodeResource);
-			
-			//if(nodeType.equals("actuator")) ProxyCoAP.actuatorList.add(newNode);
+
 			ProxyCoAP.sensorList.add(newNode);
-
 			coapClient(newNode);
-
 		}
-
 	}
 	
 	public static void coapClient(Node n) {
@@ -96,15 +114,15 @@ public class RegistrationInterface extends CoapResource {
                 	String tmp = response.getResponseText();
                 	if(tmp == null) return;
                         try {
-							JSONObject jobj = null;
-							jobj = new JSONObject(tmp.toString());
-							//System.out.println("Prova:"+jobj);
+							JSONObject jobj = new JSONObject(tmp);
 							String value = "";
+
 							if (n.getNodeType().equals("sensor")) value = jobj.get("humidity").toString();
 							else value = jobj.get("status").toString();
 
 							System.out.println(n.getNodeName()+", "+n.getNodeResource()+": "+value);
-							n.setValues(value);
+							//n.setValues(value);
+							ProxyCoAP.sensorList.get(ProxyCoAP.sensorList.indexOf(n)).setValues(value);
 
 						} catch(Exception e) { System.out.println("Ops!"); }
                 }

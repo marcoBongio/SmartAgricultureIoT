@@ -3,10 +3,10 @@
 <head>
     <title>Smart-Agriculture Dashboard</title>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
 </head>
-    <body>
-        <!--<p th:text="${name} + ' humidity: '+ ${humidity}" />-->
-        <table id="nodeTable" border="1">
+    <body onLoad="setInterval(refreshData, 10000)">
+        <table style="display: inline-block" id="sensorTable" border="1px solid black">
             <thead style="font-weight:bold;">
                 <tr>
                     <th>NAME</th>
@@ -22,10 +22,49 @@
                     <td th:utext="${node.nodeIP}"></td>
                     <td th:utext="${node.nodeType}"></td>
                     <td th:utext="${node.nodeResource}"></td>
-                    <!--<td th:utext="${node.values}"></td>-->
+                    <td th:utext="${node.currentValue}"></td>
                 </tr>
             </tbody>
-
         </table>
+                <script type="text/javascript" th:inline="javascript">
+                    function changeStatus(ip, status) {
+                        var url = "/updateStatus"+"?ip="+ip+"&status="+status; //test with "on" hardcoded
+                        //$('#actuatorDiv').load(url);
+
+                        $.ajax({
+                            'url' : url
+                        });
+                        //location.reload();
+                    }
+
+                    function refreshData() {
+                        location.reload();
+                    }
+                </script>
+        <div id="actuatorDiv" style="display: inline-block">
+        <table style="display: inline-block" id="actuatorTable" border="1px solid black">
+            <thead style="font-weight:bold;">
+            <tr>
+                <th>NAME</th>
+                <th>IP</th>
+                <th>TYPE</th>
+                <th>RESOURCE</th>
+                <th>VALUE</th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="actuator: ${actuators}">
+                <td th:utext="${actuator.nodeName}"></td>
+                <td th:utext="${actuator.nodeIP}"></td>
+                <td th:utext="${actuator.nodeType}"></td>
+                <td th:utext="${actuator.nodeResource}"></td>
+                <td th:utext="${actuator.currentValue}"></td>
+                <td><button th:nodeIP="${actuator.nodeIP}" onclick="changeStatus(this.getAttribute('nodeIP'), 'on')">ON</button></td>
+                <td><button th:nodeIP="${actuator.nodeIP}" onclick="changeStatus(this.getAttribute('nodeIP'), 'off')">OFF</button></td>
+            </tr>
+            </tbody>
+        </table>
+        </div>
     </body>
 </html>
