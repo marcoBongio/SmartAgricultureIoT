@@ -36,14 +36,30 @@ public class MainController {
     }
 
     @GetMapping("/updateStatus")
-    public String updateStatus(@RequestParam(required = true, value = "ip") String ip, @RequestParam(required = true, value = "status") String status, Model m) throws URISyntaxException {
-        System.out.println("Changing node "+ip+" status to "+status);
+    public String updateStatus(@RequestParam(required = true, value = "ip") String ip, @RequestParam(required = true, value = "resource") String resource, @RequestParam(required = true, value = "status") String status, Model m) throws URISyntaxException {
+        System.out.println("Changing node "+ip+ " ("+resource+") status to "+status);
 
-        CoapClient client = new CoapClient("coap://[" + ip + "]/irrigator");
+        CoapClient client = new CoapClient("coap://[" + ip + "]/" + resource);
         client.put("status="+status, MediaTypeRegistry.TEXT_PLAIN);
 
         return "home";
     }
+    
+    @RequestMapping("/refreshSensors")
+    public String refreshSensors(Model model) {
+        List<Node> sensors = new ArrayList<>();
+        List<Node> actuators = new ArrayList<>();
+        for(Node n: ProxyCoAP.sensorList)
+            if(n.getNodeType().equals("sensor"))
+                sensors.add(n);
+            else actuators.add(n);
+
+        model.addAttribute("nodes", sensors);
+        model.addAttribute("actuators", actuators);
+
+        return "home";
+    }
+
 }
 //test (works)
         /*

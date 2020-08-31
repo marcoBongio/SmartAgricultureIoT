@@ -4,49 +4,19 @@ import org.eclipse.californium.core.*;
 import java.util.*;
 
 public class ProxyCoAP extends CoapServer {
-    private static ProxyCoAP server = null;
-    private int NUM_NODES;
-    private static String[] proxyCache; //cache of the Server where the temperature value will be stored - Maybe it has to become a list in order to store the value of every sensor
-    private TemperatureResource[] t;
-	//public static List<Node> actuatorList = new ArrayList<>();
-    public static List<Node> sensorList = new ArrayList<>();
-    //constructor
-    /*public ProxyCoAP() throws SocketException {
+	private static ProxyCoAP server = null;
+	private int NUM_NODES;
+	private static String[] proxyCache; //cache of the Server where the temperature value will be stored - Maybe it has to become a list in order to store the value of every sensor
+	private TemperatureResource[] t;
+	public static List<Node> sensorList = new ArrayList<>();
 
-    	this.NUM_NODES = nn;
-    	proxyCache = new String[NUM_NODES];
-    	t = new TemperatureResource[NUM_NODES];
-    	
-        for(int i = 0; i < NUM_NODES; i++) {
-            t[i] = new TemperatureResource(i);
-            this.add(new TemperatureResource(i));
-        }
-    }*/
+	public static void startProxy() {
+		System.out.print("\033[H\033[2J");  //"clear" the screen
+		System.out.flush();
 
-    /*public static void writeCache(int index, String txt) { proxyCache[index] = txt; }
-
-    public static void printCache() {
-        
-        System.out.print("[ ");
-        for(int j=0; j<proxyCache.length; j++)
-            System.out.print(proxyCache[j] + " ");
-            
-        System.out.println("]");
-    }
-
-    public static String getCache(int index){ return proxyCache[index]; }
-
-    public int getNumNodes() { return NUM_NODES; }*/
-
-    //public static void main (String[] args) {
-    	//int NUM_NODES=1;
-    public static void startProxy() {
-    	System.out.print("\033[H\033[2J");  //"clear" the screen
-	    System.out.flush();
-
-        // create server
-        server = new ProxyCoAP(); //new ProxyCoAP(NUM_NODES);
-        server.add(new RestInterface("registration"));
-        server.start();
-    }
+		// create server
+		server = new ProxyCoAP(); //new ProxyCoAP(NUM_NODES);
+		server.add(new RestInterface("registration"));
+		server.start();
+	}
 }

@@ -14,11 +14,11 @@
 #define LOG_LEVEL LOG_LEVEL_DBG
 #define SERVER_EP "coap://[fd00::1]:5683"
 #define SERVER_REGISTRATION "/registration"
-#define IRRIGATION_ACTUATOR "/irrigator"
+#define OPEN_WINDOW_ACTUATOR "/window"
 
-#define HUM_MAX 90
-#define HUM_MIN 35
+#define TEM_MAX 40
+#define TEM_MIN 10
 
-extern coap_resource_t res_humidity;
+extern coap_resource_t res_temperature;
 //extern coap_resource_t res_humidifier;
-extern float humidity;
+extern float temperature;

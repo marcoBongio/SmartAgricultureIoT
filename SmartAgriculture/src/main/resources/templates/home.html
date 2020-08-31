@@ -5,7 +5,8 @@
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
 </head>
-    <body onLoad="setInterval(refreshData, 10000)">
+    <body onLoad="setInterval(refreshData, 1500)">
+    <div id="sensorWrapper">
         <table style="display: inline-block" id="sensorTable" border="1px solid black">
             <thead style="font-weight:bold;">
                 <tr>
@@ -27,8 +28,8 @@
             </tbody>
         </table>
                 <script type="text/javascript" th:inline="javascript">
-                    function changeStatus(ip, status) {
-                        var url = "/updateStatus"+"?ip="+ip+"&status="+status; //test with "on" hardcoded
+                    function changeStatus(ip, resource, status) {
+                        var url = "/updateStatus"+"?ip="+ip+"&resource="+resource+"&status="+status; //test with "on" hardcoded
                         //$('#actuatorDiv').load(url);
 
                         $.ajax({
@@ -37,11 +38,10 @@
                         //location.reload();
                     }
 
-                    function refreshData() {
-                        location.reload();
-                    }
+                    function refreshData() { 
+			$('#sensorWrapper').load("/refreshSensors"); 
+		    }
                 </script>
-        <div id="actuatorDiv" style="display: inline-block">
         <table style="display: inline-block" id="actuatorTable" border="1px solid black">
             <thead style="font-weight:bold;">
             <tr>
@@ -60,11 +60,11 @@
                 <td th:utext="${actuator.nodeType}"></td>
                 <td th:utext="${actuator.nodeResource}"></td>
                 <td th:utext="${actuator.currentValue}"></td>
-                <td><button th:nodeIP="${actuator.nodeIP}" onclick="changeStatus(this.getAttribute('nodeIP'), 'on')">ON</button></td>
-                <td><button th:nodeIP="${actuator.nodeIP}" onclick="changeStatus(this.getAttribute('nodeIP'), 'off')">OFF</button></td>
+                <td><button th:nodeIP="${actuator.nodeIP}" th:nodeResource="${actuator.nodeResource}" onclick="changeStatus(this.getAttribute('nodeIP'), this.getAttribute('nodeResource'), 'on')">ON</button></td>
+                <td><button th:nodeIP="${actuator.nodeIP}" th:nodeResource="${actuator.nodeResource}" onclick="changeStatus(this.getAttribute('nodeIP'), this.getAttribute('nodeResource'), 'off')">OFF</button></td>
             </tr>
             </tbody>
         </table>
-        </div>
+    </div>
     </body>
 </html>

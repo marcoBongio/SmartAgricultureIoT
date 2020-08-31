@@ -25,6 +25,7 @@ public class RestInterface extends CoapResource {
 		String actuatorIP = null;
 		String payload = new String(exchange.getRequestPayload());
 		int min = Integer.MAX_VALUE;
+
 		if(payload.equals("irrigator")) {
 			for (Node n : ProxyCoAP.sensorList) {
 				if (n.getNodeType().equals("actuator") && n.getNodeResource().equals("irrigator"))
@@ -33,13 +34,23 @@ public class RestInterface extends CoapResource {
 						min = n.getLinkedNodes().size();
 					}
 			}
-			if(actuatorIP == null) return;
+		}
+		else if(payload.equals("window")) {
 			for (Node n : ProxyCoAP.sensorList) {
-				if(n.getNodeIP().equals(actuatorIP))
-					n.addLinkedNode(exchange.getSourceAddress().getHostAddress());
+				if (n.getNodeType().equals("actuator") && n.getNodeResource().equals("window"))
+					if(n.getLinkedNodes().size() < min) {
+						actuatorIP = n.getNodeIP();
+						min = n.getLinkedNodes().size();
+					}
 			}
 		}
-		//else if(payload.equals("window")) {}
+		else  return;	
+
+		if(actuatorIP == null) return;
+		for (Node n : ProxyCoAP.sensorList) {
+			if(n.getNodeIP().equals(actuatorIP))
+				n.addLinkedNode(exchange.getSourceAddress().getHostAddress());
+		}
 
 		Response response = new Response(ResponseCode.CONTENT);
 		response.setPayload(actuatorIP);
@@ -52,25 +63,6 @@ public class RestInterface extends CoapResource {
 				return true;
 		return false;
 	}
-
-	/*public void handlePUT(CoapExchange exchange) {
-		System.out.println("PUT request received.");
-		JSONObject contentJson = new JSONObject(new String(exchange.getRequestPayload()));
-
-		if(contentJson != null) {
-			String nodeIP = (String) contentJson.get("ip");
-			for(Node n: ProxyCoAP.sensorList)
-				if(n.getNodeIP().equals(nodeIP)) {
-					n.setValues((String) contentJson.get("status"));
-					CoapClient client = new CoapClient("coap://[" + nodeIP + "]/" + n.getNodeResource());
-					client.put("status="+( (String)contentJson.get("status")), MediaTypeRegistry.TEXT_PLAIN);
-				}
-
-			Response response = new Response(ResponseCode.CONTENT);
-			response.setPayload("ACK");
-			exchange.respond(response);
-		}
-	}*/
 
 	public void handlePOST(CoapExchange exchange) {
 		JSONObject contentJson = new JSONObject(new String(exchange.getRequestPayload()));
@@ -96,7 +88,7 @@ public class RestInterface extends CoapResource {
 			String nodeName = "Node" + count++;
 
 			CoapClient client = new CoapClient("coap://[" + nodeIP + "]/" + nodeResource);
-			client.post("name="+nodeName,MediaTypeRegistry.TEXT_PLAIN); //a cosa serve?
+			client.post("name="+nodeName,MediaTypeRegistry.TEXT_PLAIN); 
 
 			Node newNode = new Node(nodeName, nodeType, nodeResource, nodeIP);
 			System.out.println("nodeName=" + nodeName + ", nodeIP="+nodeIP+", nodeType=" + nodeType + ", nodeResource=" + nodeResource);
@@ -114,17 +106,22 @@ public class RestInterface extends CoapResource {
                 	String tmp = response.getResponseText();
                 	if(tmp == null) return;
                         try {
-							JSONObject jobj = new JSONObject(tmp);
-							String value = "";
+				JSONObject jobj = new JSONObject(tmp);
+				String value = "";
 
-							if (n.getNodeType().equals("sensor")) value = jobj.get("humidity").toString();
-							else value = jobj.get("status").toString();
+				if (n.getNodeType().equals("sensor")){
+					if (n.getNodeResource().equals("humidity"))
+						value = jobj.get("humidity").toString();
+					else
+						value = jobj.get("temperature").toString();
+				}
+				else value = jobj.get("status").toString();
 
-							System.out.println(n.getNodeName()+", "+n.getNodeResource()+": "+value);
-							//n.setValues(value);
-							ProxyCoAP.sensorList.get(ProxyCoAP.sensorList.indexOf(n)).setValues(value);
+				System.out.println(n.getNodeName()+", "+n.getNodeResource()+": "+value);
+				//n.setValues(value);
+				ProxyCoAP.sensorList.get(ProxyCoAP.sensorList.indexOf(n)).setValues(value);
 
-						} catch(Exception e) { System.out.println("Ops!"); }
+			} catch(Exception e) { System.out.println("Ops!"); }
                 }
                 public void onError() { System.err.println("Failed"); }
             }
