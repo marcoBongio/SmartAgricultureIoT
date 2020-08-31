@@ -8,11 +8,14 @@
 </head>
     <body onLoad="setInterval(refreshData, 1500)">
     <div id="sensorWrapper" style="width:100%; height:100%;">
-        <div class="titleBar">Smart Agriculture Dashboard</div>
+        <div class="titleBar">
+            <img src="icon.png" style="width:40px; height:40px;" alt=""/>
+        	Smart Agriculture Dashboard
+        </div>
         <table style="display: inline-block" id="sensorTable">
             <thead style="font-weight:bold;">
                 <tr>
-                    <th>NAME</th>
+                    <th>SENSOR</th>
                     <th>IP</th>
                     <th>TYPE</th>
                     <th>RESOURCE</th>
@@ -59,16 +62,15 @@
 
                     function refreshData() { $('#sensorWrapper').load("/refreshSensors"); }
                 </script>
-        <table style="display: inline-block" id="actuatorTable">
+        <table style="display: inline-block;" id="actuatorTable">
             <thead style="font-weight:bold;">
             <tr>
-                <th>NAME</th>
+                <th>ACTUATOR</th>
                 <th>IP</th>
                 <th>TYPE</th>
                 <th>RESOURCE</th>
-                <th>VALUE</th>
-                <th></th>
-                <th></th>
+                <th>STATUS</th>
+                <th>COMMAND</th>
             </tr>
             </thead>
             <tbody>
@@ -77,10 +79,10 @@
                 <td th:utext="${actuator.nodeIP}"></td>
                 <td th:utext="${actuator.nodeType}"></td>
                 <td th:utext="${actuator.nodeResource}"></td>
-                <td th:if="${actuator.currentValue.equals('1')}">on</td>
-                <td th:if="${actuator.currentValue.equals('0')}">off</td>
-                <td><button class="onButton" th:nodeIP="${actuator.nodeIP}" th:nodeResource="${actuator.nodeResource}" onclick="changeStatus(this.getAttribute('nodeIP'), this.getAttribute('nodeResource'), 'on')">ON</button></td>
-                <td><button class="offButton" th:nodeIP="${actuator.nodeIP}" th:nodeResource="${actuator.nodeResource}" onclick="changeStatus(this.getAttribute('nodeIP'), this.getAttribute('nodeResource'), 'off')">OFF</button></td>
+                <td th:if="${actuator.currentValue.equals('1')}" class="onButton">ON</td>
+                <td th:if="${actuator.currentValue.equals('0')}" class="offButton">OFF</td>
+                <td th:if="${actuator.currentValue.equals('0')}" ><button class="" th:nodeIP="${actuator.nodeIP}" th:nodeResource="${actuator.nodeResource}" onclick="changeStatus(this.getAttribute('nodeIP'), this.getAttribute('nodeResource'), 'on')">Activate</button></td>
+                <td th:if="${actuator.currentValue.equals('1')}"><button class="" th:nodeIP="${actuator.nodeIP}" th:nodeResource="${actuator.nodeResource}" onclick="changeStatus(this.getAttribute('nodeIP'), this.getAttribute('nodeResource'), 'off')">Deactivate</button></td>
             </tr>
             </tbody>
         </table>
