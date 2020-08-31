@@ -8,8 +8,8 @@ public class Node {
     private String nodeIP;
     private String nodeType;
     private String nodeResource;
-    private String currentValue;
-    private List<ResourceValue> values = new ArrayList<>();
+    private String value;
+    //private List<ResourceValue> values = new ArrayList<>();
     private List<String> linkedNodes = new ArrayList<>();
 
     public Node(String nodeName, String nodeType, String nodeResource, String nodeIP) {
@@ -28,7 +28,7 @@ public class Node {
     public String getNodeResource() {
         return nodeResource;
     }
-    public String getCurrentValue() {return currentValue;}
+    public String getCurrentValue() {return value;}
     public String getNodeName() {
         return nodeName;
     }
@@ -42,11 +42,11 @@ public class Node {
     public void setNodeResource(String nodeResource) {
             this.nodeResource = nodeResource;
     }
-    public void setCurrentValue(String val) { this.currentValue = val; }
+    public void setValues(String val) { this.value = val; }
     public void setNodeName(String nodeName) {
             this.nodeName = nodeName;
     }
-    public void setValues(String val) { this.values.add(new ResourceValue(val)); setCurrentValue(val); }
+    //public void setValues(String val) { this.values.add(new ResourceValue(val)); setCurrentValue(val); }
 
     public List<String> getLinkedNodes() {
         return linkedNodes;

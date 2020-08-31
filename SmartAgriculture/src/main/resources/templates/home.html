@@ -4,10 +4,12 @@
     <title>Smart-Agriculture Dashboard</title>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <link rel="stylesheet" type="text/css" media="all" href="../static/style.css" th:href="@{/style.css}" />
 </head>
     <body onLoad="setInterval(refreshData, 1500)">
-    <div id="sensorWrapper">
-        <table style="display: inline-block" id="sensorTable" border="1px solid black">
+    <div id="sensorWrapper" style="width:100%; height:100%;">
+        <div class="titleBar">Smart Agriculture Dashboard</div>
+        <table style="display: inline-block" id="sensorTable">
             <thead style="font-weight:bold;">
                 <tr>
                     <th>NAME</th>
@@ -18,7 +20,7 @@
                 </tr>
             </thead>
             <tbody>
-                <tr th:each="node: ${nodes}">
+                <tr th:each="node: ${nodes}" th:nodeIP="${node.nodeIP}" onmouseover="getAssociatedNodes(this.getAttribute('nodeIP'), 'actuatorTable')">
                     <td th:utext="${node.nodeName}"></td>
                     <td th:utext="${node.nodeIP}"></td>
                     <td th:utext="${node.nodeType}"></td>
@@ -31,18 +33,33 @@
                     function changeStatus(ip, resource, status) {
                         var url = "/updateStatus"+"?ip="+ip+"&resource="+resource+"&status="+status; //test with "on" hardcoded
                         //$('#actuatorDiv').load(url);
-
                         $.ajax({
                             'url' : url
                         });
-                        //location.reload();
                     }
 
-                    function refreshData() { 
-			$('#sensorWrapper').load("/refreshSensors"); 
-		    }
+                    function getAssociatedNodes(ip, tableID) {
+                        $.ajax({
+                            'url' : "/associatedNodes?ip="+ip,
+                            success: function(data) {
+                                data = data.replace("[", ""); //remove useless char
+                                data = data.replace("]", ""); //remove useless char
+                                var ipAddresses = data.split(", ");
+                                var table = document.getElementById(tableID);
+                                for(var i = 1, row; row = table.rows[i]; i++) { //i=1 because we skip title row
+                                    for(var j = 0; j<ipAddresses.length; j++) {
+                                        if (row.cells[1].textContent === ipAddresses[j]) {
+                                            row.style.setProperty("background-color", "lightsalmon");
+                                        }
+                                    }
+                                }
+                            }
+                        });
+                    }
+
+                    function refreshData() { $('#sensorWrapper').load("/refreshSensors"); }
                 </script>
-        <table style="display: inline-block" id="actuatorTable" border="1px solid black">
+        <table style="display: inline-block" id="actuatorTable">
             <thead style="font-weight:bold;">
             <tr>
                 <th>NAME</th>
@@ -51,17 +68,19 @@
                 <th>RESOURCE</th>
                 <th>VALUE</th>
                 <th></th>
+                <th></th>
             </tr>
             </thead>
             <tbody>
-            <tr th:each="actuator: ${actuators}">
+            <tr th:each="actuator: ${actuators}" th:nodeIP="${actuator.nodeIP}" onmouseover="getAssociatedNodes(this.getAttribute('nodeIP'), 'sensorTable')">
                 <td th:utext="${actuator.nodeName}"></td>
                 <td th:utext="${actuator.nodeIP}"></td>
                 <td th:utext="${actuator.nodeType}"></td>
                 <td th:utext="${actuator.nodeResource}"></td>
-                <td th:utext="${actuator.currentValue}"></td>
-                <td><button th:nodeIP="${actuator.nodeIP}" th:nodeResource="${actuator.nodeResource}" onclick="changeStatus(this.getAttribute('nodeIP'), this.getAttribute('nodeResource'), 'on')">ON</button></td>
-                <td><button th:nodeIP="${actuator.nodeIP}" th:nodeResource="${actuator.nodeResource}" onclick="changeStatus(this.getAttribute('nodeIP'), this.getAttribute('nodeResource'), 'off')">OFF</button></td>
+                <td th:if="${actuator.currentValue.equals('1')}">on</td>
+                <td th:if="${actuator.currentValue.equals('0')}">off</td>
+                <td><button class="onButton" th:nodeIP="${actuator.nodeIP}" th:nodeResource="${actuator.nodeResource}" onclick="changeStatus(this.getAttribute('nodeIP'), this.getAttribute('nodeResource'), 'on')">ON</button></td>
+                <td><button class="offButton" th:nodeIP="${actuator.nodeIP}" th:nodeResource="${actuator.nodeResource}" onclick="changeStatus(this.getAttribute('nodeIP'), this.getAttribute('nodeResource'), 'off')">OFF</button></td>
             </tr>
             </tbody>
         </table>

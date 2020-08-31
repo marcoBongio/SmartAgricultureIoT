@@ -60,6 +60,15 @@ public class MainController {
         return "home";
     }
 
+    @GetMapping("/associatedNodes")
+    @ResponseBody
+    public String getAssociatedNodes(@RequestParam(required = true, value = "ip") String ip, Model model) {
+        for(Node n: ProxyCoAP.sensorList)
+            if(n.getNodeIP().equals(ip))
+                return n.getLinkedNodes().toString();
+        return "";
+    }
+
 }
 //test (works)
         /*

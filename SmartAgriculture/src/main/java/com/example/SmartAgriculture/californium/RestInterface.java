@@ -44,12 +44,15 @@ public class RestInterface extends CoapResource {
 					}
 			}
 		}
-		else  return;	
+		else return;
 
 		if(actuatorIP == null) return;
+
 		for (Node n : ProxyCoAP.sensorList) {
 			if(n.getNodeIP().equals(actuatorIP))
 				n.addLinkedNode(exchange.getSourceAddress().getHostAddress());
+			else if(n.getNodeIP().equals(exchange.getSourceAddress().getHostAddress()))
+				n.addLinkedNode(actuatorIP);
 		}
 
 		Response response = new Response(ResponseCode.CONTENT);
@@ -66,10 +69,10 @@ public class RestInterface extends CoapResource {
 
 	public void handlePOST(CoapExchange exchange) {
 		JSONObject contentJson = new JSONObject(new String(exchange.getRequestPayload()));
-		System.out.println("Node registration...");
 
 		if (contentJson != null){
 			String nodeIP = exchange.getSourceAddress().getHostAddress();
+			System.out.println("Node ["+nodeIP+"] registration...");
 
 			//check for double registrations
 			if(checkDouble(nodeIP)) {
@@ -117,11 +120,11 @@ public class RestInterface extends CoapResource {
 				}
 				else value = jobj.get("status").toString();
 
-				System.out.println(n.getNodeName()+", "+n.getNodeResource()+": "+value);
+				//System.out.println(n.getNodeName()+", "+n.getNodeResource()+": "+value);
 				//n.setValues(value);
 				ProxyCoAP.sensorList.get(ProxyCoAP.sensorList.indexOf(n)).setValues(value);
 
-			} catch(Exception e) { System.out.println("Ops!"); }
+			} catch(Exception e) { System.out.println("Connection Error! Restart app."); }
                 }
                 public void onError() { System.err.println("Failed"); }
             }
