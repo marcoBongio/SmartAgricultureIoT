@@ -12,7 +12,11 @@
             <img src="icon.png" style="width:40px; height:40px;" alt=""/>
         	Smart Agriculture Dashboard
         </div>
-        <table style="display: inline-block" id="sensorTable">
+
+        <br><br><br><br>
+
+        <div id="tablesDiv">
+        <table style="display: inline-block; float:left;" id="sensorTable" >
             <thead style="font-weight:bold;">
                 <tr>
                     <th>SENSOR</th>
@@ -23,7 +27,7 @@
                 </tr>
             </thead>
             <tbody>
-                <tr th:each="node: ${nodes}" th:nodeIP="${node.nodeIP}" onmouseover="getAssociatedNodes(this.getAttribute('nodeIP'), 'actuatorTable')">
+                <tr th:each="node: ${nodes}" th:nodeIP="${node.nodeIP}" onmouseover="getAssociatedNodes(this.getAttribute('nodeIP'), 'actuatorTable', 'lightsalmon')" onmouseout="getAssociatedNodes(this.getAttribute('nodeIP'), 'actuatorTable', 'white')">
                     <td th:utext="${node.nodeName}"></td>
                     <td th:utext="${node.nodeIP}"></td>
                     <td th:utext="${node.nodeType}"></td>
@@ -41,7 +45,7 @@
                         });
                     }
 
-                    function getAssociatedNodes(ip, tableID) {
+                    function getAssociatedNodes(ip, tableID, color) {
                         $.ajax({
                             'url' : "/associatedNodes?ip="+ip,
                             success: function(data) {
@@ -52,7 +56,7 @@
                                 for(var i = 1, row; row = table.rows[i]; i++) { //i=1 because we skip title row
                                     for(var j = 0; j<ipAddresses.length; j++) {
                                         if (row.cells[1].textContent === ipAddresses[j]) {
-                                            row.style.setProperty("background-color", "lightsalmon");
+                                            row.style.setProperty("background-color", color);
                                         }
                                     }
                                 }
@@ -62,7 +66,7 @@
 
                     function refreshData() { $('#sensorWrapper').load("/refreshSensors"); }
                 </script>
-        <table style="display: inline-block;" id="actuatorTable">
+        <table style="display: inline-block;float:right;" id="actuatorTable">
             <thead style="font-weight:bold;">
             <tr>
                 <th>ACTUATOR</th>
@@ -74,7 +78,7 @@
             </tr>
             </thead>
             <tbody>
-            <tr th:each="actuator: ${actuators}" th:nodeIP="${actuator.nodeIP}" onmouseover="getAssociatedNodes(this.getAttribute('nodeIP'), 'sensorTable')">
+            <tr th:each="actuator: ${actuators}" th:nodeIP="${actuator.nodeIP}" onmouseover="getAssociatedNodes(this.getAttribute('nodeIP'), 'sensorTable', 'lightsalmon')" onmouseout="getAssociatedNodes(this.getAttribute('nodeIP'), 'sensorTable', 'white')">
                 <td th:utext="${actuator.nodeName}"></td>
                 <td th:utext="${actuator.nodeIP}"></td>
                 <td th:utext="${actuator.nodeType}"></td>
@@ -86,6 +90,7 @@
             </tr>
             </tbody>
         </table>
+        </div>
     </div>
     </body>
 </html>

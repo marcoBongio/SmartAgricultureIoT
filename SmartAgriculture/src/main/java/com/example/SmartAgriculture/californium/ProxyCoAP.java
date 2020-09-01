@@ -5,9 +5,9 @@ import java.util.*;
 
 public class ProxyCoAP extends CoapServer {
 	private static ProxyCoAP server = null;
-	private int NUM_NODES;
-	private static String[] proxyCache; //cache of the Server where the temperature value will be stored - Maybe it has to become a list in order to store the value of every sensor
-	private TemperatureResource[] t;
+	//cache of the Server where the sensor values will be stored
+	//in a more realistic scenario, time-continuous sensor data should be stored in an appropriate DB
+	// such as mongoDB
 	public static List<Node> sensorList = new ArrayList<>();
 
 	public static void startProxy() {
@@ -15,7 +15,7 @@ public class ProxyCoAP extends CoapServer {
 		System.out.flush();
 
 		// create server
-		server = new ProxyCoAP(); //new ProxyCoAP(NUM_NODES);
+		server = new ProxyCoAP();
 		server.add(new RestInterface("registration"));
 		server.start();
 	}

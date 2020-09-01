@@ -13,8 +13,10 @@ AUTOSTART_PROCESSES(&temperature_sensor);
 
 static void response_handler(coap_message_t *response){
 
-    if (response == NULL)
+    if (response == NULL || response->payload == NULL) {
+        LOG_DBG("No Actuator found...\n");
         return;
+        }
         
     LOG_DBG("Response %s\n", response->payload);
     if(strcmp((const char *)response->payload, "ACK") == 0)
@@ -84,7 +86,7 @@ PROCESS_THREAD(temperature_sensor, ev, data) {
 	static struct etimer timer;
 	static struct etimer et; //timer to check window status
 	etimer_set(&timer, CLOCK_SECOND*60);
-	etimer_set(&et, CLOCK_SECOND*60);
+	etimer_set(&et, CLOCK_SECOND*10);
 	
 	printf("Timer inizialized\n");
 
@@ -124,7 +126,7 @@ PROCESS_THREAD(temperature_sensor, ev, data) {
 				//printf("Actuator IP request: %s\n", (const char*) request->payload);
 				COAP_BLOCKING_REQUEST(&server_ep, request, actuator_response_handler);
 
-				coap_endpoint_parse(actuator_ip, strlen(actuator_ip), &actuator_ep);
+				if(actuator_assigned) coap_endpoint_parse(actuator_ip, strlen(actuator_ip), &actuator_ep);
 			}
 			
 			if(actuator_assigned) { 

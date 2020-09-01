@@ -20,39 +20,38 @@ public class RestInterface extends CoapResource {
 	//actuator look-up
 	public void handleGET(CoapExchange exchange) {
 		System.out.println("[ DBG ] actuator lookup... ");
-		if(ProxyCoAP.sensorList.isEmpty()) return;
 
-		String actuatorIP = null;
-		String payload = new String(exchange.getRequestPayload());
-		int min = Integer.MAX_VALUE;
+		String actuatorIP = null; //"NONE";
+		if (!ProxyCoAP.sensorList.isEmpty()) {
+			String payload = new String(exchange.getRequestPayload());
+			int min = Integer.MAX_VALUE;
 
-		if(payload.equals("irrigator")) {
-			for (Node n : ProxyCoAP.sensorList) {
-				if (n.getNodeType().equals("actuator") && n.getNodeResource().equals("irrigator"))
-					if(n.getLinkedNodes().size() < min) {
-						actuatorIP = n.getNodeIP();
-						min = n.getLinkedNodes().size();
-					}
+			if (payload.equals("irrigator")) {
+				for (Node n : ProxyCoAP.sensorList) {
+					if (n.getNodeType().equals("actuator") && n.getNodeResource().equals("irrigator"))
+						if (n.getLinkedNodes().size() < min) {
+							actuatorIP = n.getNodeIP();
+							min = n.getLinkedNodes().size();
+						}
+				}
+			} else if (payload.equals("window")) {
+				for (Node n : ProxyCoAP.sensorList) {
+					if (n.getNodeType().equals("actuator") && n.getNodeResource().equals("window"))
+						if (n.getLinkedNodes().size() < min) {
+							actuatorIP = n.getNodeIP();
+							min = n.getLinkedNodes().size();
+						}
+				}
 			}
-		}
-		else if(payload.equals("window")) {
-			for (Node n : ProxyCoAP.sensorList) {
-				if (n.getNodeType().equals("actuator") && n.getNodeResource().equals("window"))
-					if(n.getLinkedNodes().size() < min) {
-						actuatorIP = n.getNodeIP();
-						min = n.getLinkedNodes().size();
-					}
+
+			if (actuatorIP != null) {
+				for (Node n : ProxyCoAP.sensorList) {
+					if (n.getNodeIP().equals(actuatorIP))
+						n.addLinkedNode(exchange.getSourceAddress().getHostAddress());
+					else if (n.getNodeIP().equals(exchange.getSourceAddress().getHostAddress()))
+						n.addLinkedNode(actuatorIP);
+				}
 			}
-		}
-		else return;
-
-		if(actuatorIP == null) return;
-
-		for (Node n : ProxyCoAP.sensorList) {
-			if(n.getNodeIP().equals(actuatorIP))
-				n.addLinkedNode(exchange.getSourceAddress().getHostAddress());
-			else if(n.getNodeIP().equals(exchange.getSourceAddress().getHostAddress()))
-				n.addLinkedNode(actuatorIP);
 		}
 
 		Response response = new Response(ResponseCode.CONTENT);
@@ -120,13 +119,11 @@ public class RestInterface extends CoapResource {
 				}
 				else value = jobj.get("status").toString();
 
-				//System.out.println(n.getNodeName()+", "+n.getNodeResource()+": "+value);
-				//n.setValues(value);
 				ProxyCoAP.sensorList.get(ProxyCoAP.sensorList.indexOf(n)).setValues(value);
 
 			} catch(Exception e) { System.out.println("Connection Error! Restart app."); }
                 }
-                public void onError() { System.err.println("Failed"); }
+                public void onError() { System.err.println("Observing Failed"); }
             }
         );
     }

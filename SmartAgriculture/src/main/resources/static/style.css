@@ -15,6 +15,12 @@ body {
     text-align: center;
     font-weight: bold;
 }
+
+#tablesDiv {
+  margin: auto;
+  width: 80%;
+}
+
 table {
     display: inline-block;
     border-collapse: collapse;

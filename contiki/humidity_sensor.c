@@ -23,8 +23,8 @@ static void response_handler(coap_message_t *response){
 
 static void actuator_response_handler(coap_message_t *response){
 
-	if (response == NULL) {
-		LOG_DBG("No Actuator found...");
+	if (response == NULL || response->payload == NULL) {
+		LOG_DBG("No Actuator found...\n");
 		return;
 	}
 
@@ -84,7 +84,7 @@ PROCESS_THREAD(humidity_sensor, ev, data) {
 	static struct etimer timer;
 	static struct etimer et; //timer to check irrigator status
 	etimer_set(&timer, CLOCK_SECOND*60);
-	etimer_set(&et, CLOCK_SECOND*60);
+	etimer_set(&et, CLOCK_SECOND*10); //10sec
 	
 	printf("Timer inizialized\n");
 
@@ -104,7 +104,7 @@ PROCESS_THREAD(humidity_sensor, ev, data) {
 
 					humidity -= var;
 						
-					printf("Natural Humidity variation registered, variation: -%d \n", var);
+					printf("Natural Humidity variation registered, variation: %d \n", var);
 					//res_humidity.trigger(); //trigger the event to notify observers
 				}
 			}
@@ -115,7 +115,7 @@ PROCESS_THREAD(humidity_sensor, ev, data) {
 		}
 		
 		if(etimer_expired(&et)){
-			if(!actuator_assigned) { //actuator_discovery();
+			if(!actuator_assigned) {
 				LOG_DBG("Actuator Discovery...\n");
 		
 				coap_init_message(request, COAP_TYPE_CON, COAP_GET, 0);
@@ -127,10 +127,8 @@ PROCESS_THREAD(humidity_sensor, ev, data) {
 				//printf("Actuator IP request: %s\n", (const char*) request->payload);
 				COAP_BLOCKING_REQUEST(&server_ep, request, actuator_response_handler);
 
-				coap_endpoint_parse(actuator_ip, strlen(actuator_ip), &actuator_ep);
-			}
-			
-			if(actuator_assigned) { 
+				if(actuator_assigned) coap_endpoint_parse(actuator_ip, strlen(actuator_ip), &actuator_ep);
+			} else { 
 		
 				coap_init_message(request, COAP_TYPE_CON, COAP_GET, 0);
 				coap_set_header_uri_path(request, (const char *) &IRRIGATION_ACTUATOR);
@@ -163,7 +161,7 @@ PROCESS_THREAD(humidity_sensor, ev, data) {
 
 					coap_set_payload(request, (uint8_t *)mes, sizeof(mes)-1);
 
-					COAP_BLOCKING_REQUEST(&actuator_ep, request, test_resp_handler); //controllare resp_handler se serve o no
+					COAP_BLOCKING_REQUEST(&actuator_ep, request, test_resp_handler);
 				}
 			}
 			
