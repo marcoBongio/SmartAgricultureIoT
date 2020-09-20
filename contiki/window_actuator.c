@@ -26,6 +26,9 @@ PROCESS_THREAD(window_actuator, ev, data){
 
 	PROCESS_BEGIN();
 	
+	printf("Starting window Actuator\n");
+	coap_activate_resource(&res_window, "window");
+	
 	coap_endpoint_parse(SERVER_EP, strlen(SERVER_EP), &server_ep);
 	
 	do {
@@ -41,8 +44,7 @@ PROCESS_THREAD(window_actuator, ev, data){
         
     } while (!result);
 	
-	printf("Starting window Actuator\n");
-	coap_activate_resource(&res_window, "window");
+	
 
 	PROCESS_END();
 }

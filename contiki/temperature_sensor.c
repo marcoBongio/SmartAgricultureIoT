@@ -63,6 +63,9 @@ PROCESS_THREAD(temperature_sensor, ev, data) {
     
     PROCESS_BEGIN();
     
+        LOG_INFO("Starting temperature sensor \n");
+    coap_activate_resource(&res_temperature, "temperature");
+    
 	coap_endpoint_parse(SERVER_EP, strlen(SERVER_EP), &server_ep);
 
     do {
@@ -78,9 +81,7 @@ PROCESS_THREAD(temperature_sensor, ev, data) {
         
     } while (!result);
 
-    LOG_INFO("Starting temperature sensor \n");
 
-    coap_activate_resource(&res_temperature, "temperature");
 	
 	//initialize the timer
 	static struct etimer timer;
@@ -127,9 +128,7 @@ PROCESS_THREAD(temperature_sensor, ev, data) {
 				COAP_BLOCKING_REQUEST(&server_ep, request, actuator_response_handler);
 
 				if(actuator_assigned) coap_endpoint_parse(actuator_ip, strlen(actuator_ip), &actuator_ep);
-			}
-			
-			if(actuator_assigned) { 
+			} else { 
 		
 				coap_init_message(request, COAP_TYPE_CON, COAP_GET, 0);
 				coap_set_header_uri_path(request, (const char *) &OPEN_WINDOW_ACTUATOR);
@@ -162,7 +161,7 @@ PROCESS_THREAD(temperature_sensor, ev, data) {
 
 					coap_set_payload(request, (uint8_t *)mes, sizeof(mes)-1);
 
-					COAP_BLOCKING_REQUEST(&actuator_ep, request, test_resp_handler); //controllare resp_handler se serve o no
+					COAP_BLOCKING_REQUEST(&actuator_ep, request, test_resp_handler);
 				}
 			}
 			

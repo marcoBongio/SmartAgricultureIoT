@@ -61,6 +61,9 @@ PROCESS_THREAD(humidity_sensor, ev, data) {
     
     PROCESS_BEGIN();
     
+    LOG_INFO("Starting humidity sensor \n");
+    coap_activate_resource(&res_humidity, "humidity");
+    
 	coap_endpoint_parse(SERVER_EP, strlen(SERVER_EP), &server_ep);
 
     do {
@@ -76,9 +79,7 @@ PROCESS_THREAD(humidity_sensor, ev, data) {
         
     } while (!result);
 
-    LOG_INFO("Starting humidity sensor \n");
-
-    coap_activate_resource(&res_humidity, "humidity");
+    
 	
 	//initialize the timer
 	static struct etimer timer;

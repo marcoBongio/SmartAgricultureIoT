@@ -1,6 +1,7 @@
 package com.example.SmartAgriculture.californium;
 
 import org.eclipse.californium.core.*;
+import org.eclipse.californium.core.coap.CoAP;
 import org.eclipse.californium.core.coap.CoAP.ResponseCode;
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
 import org.eclipse.californium.core.coap.Response;
@@ -106,22 +107,23 @@ public class RestInterface extends CoapResource {
             new CoapHandler() {
                 public void onLoad(CoapResponse response) {
                 	String tmp = response.getResponseText();
-                	if(tmp == null) return;
+					System.out.println(n.getNodeIP()+"/"+n.getNodeResource()+": "+tmp);
+                	if(tmp == null || tmp.equals("") || tmp.equals(" ")) return;
                         try {
-				JSONObject jobj = new JSONObject(tmp);
-				String value = "";
+							JSONObject jobj = new JSONObject(tmp);
+							String value = "";
 
-				if (n.getNodeType().equals("sensor")){
-					if (n.getNodeResource().equals("humidity"))
-						value = jobj.get("humidity").toString();
-					else
-						value = jobj.get("temperature").toString();
-				}
-				else value = jobj.get("status").toString();
+							if (n.getNodeType().equals("sensor")){
+								if (n.getNodeResource().equals("humidity"))
+									value = jobj.get("humidity").toString();
+								else
+									value = jobj.get("temperature").toString();
+							}
+							else value = jobj.get("status").toString();
 
-				ProxyCoAP.sensorList.get(ProxyCoAP.sensorList.indexOf(n)).setValues(value);
+							ProxyCoAP.sensorList.get(ProxyCoAP.sensorList.indexOf(n)).setValues(value);
 
-			} catch(Exception e) { System.out.println("Connection Error! Restart app."); }
+						} catch(Exception e) { e.printStackTrace(); } //System.out.println("Connection Error! Restart app."); }
                 }
                 public void onError() { System.err.println("Observing Failed"); }
             }
